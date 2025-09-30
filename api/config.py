@@ -8,10 +8,10 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables"""
 
     # Database
-    DATABASE_URL: str
+    DATABASE_URL: str = ""  # Will fail gracefully if not set
 
     # API
-    API_KEY: str
+    API_KEY: str = ""  # Will fail gracefully if not set
     ENVIRONMENT: str = "development"
     LOG_LEVEL: str = "INFO"
 

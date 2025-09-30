@@ -13,6 +13,13 @@ Base = declarative_base()
 # Convert DATABASE_URL to async format
 database_url = settings.DATABASE_URL
 
+# Validate DATABASE_URL is set
+if not database_url:
+    raise ValueError(
+        "DATABASE_URL environment variable is required. "
+        "Please set it in Vercel dashboard or .env file."
+    )
+
 # Remove problematic query parameters that asyncpg doesn't support
 database_url = re.sub(r'[?&]sslmode=[^&]*', '', database_url)
 database_url = re.sub(r'[?&]channel_binding=[^&]*', '', database_url)
