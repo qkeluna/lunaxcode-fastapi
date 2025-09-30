@@ -1,4 +1,5 @@
 """Feature schemas"""
+from typing import Optional
 
 from pydantic import BaseModel, Field
 from datetime import datetime
@@ -10,7 +11,7 @@ class FeatureBase(BaseModel):
     icon: str = Field(..., min_length=1, max_length=10)
     title: str = Field(..., min_length=1, max_length=100)
     description: str = Field(..., min_length=1)
-    display_order: int | None = Field(None, ge=0)
+    display_order: Optional[int] = Field(None, ge=0)
 
 
 class FeatureCreate(FeatureBase):
@@ -22,10 +23,10 @@ class FeatureCreate(FeatureBase):
 class FeatureUpdate(BaseModel):
     """Schema for updating feature"""
 
-    icon: str | None = Field(None, min_length=1, max_length=10)
-    title: str | None = Field(None, min_length=1, max_length=100)
-    description: str | None = Field(None, min_length=1)
-    display_order: int | None = Field(None, ge=0)
+    icon: Optional[str] = Field(None, min_length=1, max_length=10)
+    title: Optional[str] = Field(None, min_length=1, max_length=100)
+    description: Optional[str] = Field(None, min_length=1)
+    display_order: Optional[int] = Field(None, ge=0)
 
 
 class FeatureResponse(FeatureBase):

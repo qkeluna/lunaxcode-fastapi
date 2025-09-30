@@ -1,7 +1,8 @@
 """Onboarding question schemas"""
+from typing import Optional
 
 from pydantic import BaseModel, Field
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 
@@ -22,7 +23,7 @@ class OnboardingQuestionCreate(OnboardingQuestionBase):
 class OnboardingQuestionUpdate(BaseModel):
     """Schema for updating onboarding questions"""
 
-    title: str | None = Field(None, min_length=1, max_length=200)
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
     questions: List[Dict[str, Any]] | None = Field(None, min_items=1)
 
 

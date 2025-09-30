@@ -1,7 +1,8 @@
 """Company information schemas"""
+from typing import Optional
 
 from pydantic import BaseModel, Field
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from datetime import datetime
 
 
@@ -18,9 +19,9 @@ class CompanyInfoBase(BaseModel):
 class CompanyInfoUpdate(BaseModel):
     """Schema for updating company info"""
 
-    name: str | None = Field(None, min_length=1, max_length=100)
-    tagline: str | None = Field(None, min_length=1, max_length=200)
-    description: str | None = Field(None, min_length=1)
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    tagline: Optional[str] = Field(None, min_length=1, max_length=200)
+    description: Optional[str] = Field(None, min_length=1)
     contact: Dict[str, Any] | None = None
     payment_terms: Dict[str, Any] | None = None
 

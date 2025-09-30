@@ -1,5 +1,6 @@
 """Service schemas"""
 
+from typing import Optional
 from pydantic import BaseModel, Field
 from datetime import datetime
 
@@ -23,11 +24,11 @@ class ServiceCreate(ServiceBase):
 class ServiceUpdate(BaseModel):
     """Schema for updating service"""
 
-    name: str | None = Field(None, min_length=1, max_length=100)
-    description: str | None = Field(None, min_length=1, max_length=500)
-    details: str | None = Field(None, min_length=1)
-    icon: str | None = Field(None, min_length=1, max_length=10)
-    timeline: str | None = Field(None, min_length=1, max_length=100)
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    description: Optional[str] = Field(None, min_length=1, max_length=500)
+    details: Optional[str] = Field(None, min_length=1)
+    icon: Optional[str] = Field(None, min_length=1, max_length=10)
+    timeline: Optional[str] = Field(None, min_length=1, max_length=100)
 
 
 class ServiceResponse(ServiceBase):

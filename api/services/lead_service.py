@@ -2,7 +2,7 @@
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from api.models.lead import Lead
 from api.models.pricing import PricingPlan
 from api.models.onboarding import OnboardingQuestion
@@ -134,7 +134,7 @@ async def get_lead(lead_id: int, db: AsyncSession) -> Lead:
     return lead
 
 
-async def get_leads(db: AsyncSession, skip: int = 0, limit: int = 100, status: str | None = None) -> List[Lead]:
+async def get_leads(db: AsyncSession, skip: int = 0, limit: int = 100, status: Optional[str] = None) -> List[Lead]:
     """Get all leads with optional filtering"""
     query = select(Lead)
 

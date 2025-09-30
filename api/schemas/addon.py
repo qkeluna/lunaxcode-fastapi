@@ -1,5 +1,6 @@
 """Add-on schemas"""
 
+from typing import Optional
 from pydantic import BaseModel, Field
 from datetime import datetime
 
@@ -22,10 +23,10 @@ class AddonCreate(AddonBase):
 class AddonUpdate(BaseModel):
     """Schema for updating add-on"""
 
-    name: str | None = Field(None, min_length=1, max_length=100)
-    price_range: str | None = Field(None, pattern=r"^\d+-\d+$")
-    currency: str | None = Field(None, max_length=10)
-    unit: str | None = Field(None, min_length=1, max_length=50)
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    price_range: Optional[str] = Field(None, pattern=r"^\d+-\d+$")
+    currency: Optional[str] = Field(None, max_length=10)
+    unit: Optional[str] = Field(None, min_length=1, max_length=50)
 
 
 class AddonResponse(AddonBase):

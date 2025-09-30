@@ -1,7 +1,8 @@
 """Lead schemas"""
+from typing import Optional
 
 from pydantic import BaseModel, Field, EmailStr, field_validator
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from datetime import datetime
 
 
@@ -11,14 +12,14 @@ class LeadBase(BaseModel):
     service_type: str = Field(..., min_length=1, max_length=50)
     full_name: str = Field(..., min_length=1, max_length=100)
     email: EmailStr
-    phone: str | None = Field(None, max_length=50)
-    company: str | None = Field(None, max_length=100)
-    project_description: str | None = None
+    phone: Optional[str] = Field(None, max_length=50)
+    company: Optional[str] = Field(None, max_length=100)
+    project_description: Optional[str] = None
     answers: Dict[str, Any] = Field(...)
 
     @field_validator("phone")
     @classmethod
-    def validate_phone(cls, v: str | None) -> str | None:
+    def validate_phone(cls, v: Optional[str]) -> str | None:
         """Validate Philippine phone number format"""
         if v and not v.startswith("+63"):
             raise ValueError("Phone must be Philippine number starting with +63")
@@ -34,7 +35,7 @@ class LeadCreate(LeadBase):
 class LeadUpdate(BaseModel):
     """Schema for updating lead (admin only)"""
 
-    status: str | None = Field(None, pattern="^(new|contacted|converted|rejected)$")
+    status: Optional[str] = Field(None, pattern="^(new|contacted|converted|rejected)$")
 
 
 class LeadResponse(LeadBase):

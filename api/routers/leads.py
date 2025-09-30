@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List
+from typing import List, Optional
 
 from api.database import get_db
 from api.schemas.lead import LeadCreate, LeadUpdate, LeadResponse
@@ -31,7 +31,7 @@ async def submit_lead(lead: LeadCreate, db: AsyncSession = Depends(get_db)):
 async def list_leads(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
-    status: str | None = Query(None, pattern="^(new|contacted|converted|rejected)$"),
+    status: Optional[str] = Query(None, pattern="^(new|contacted|converted|rejected)$"),
     db: AsyncSession = Depends(get_db),
     api_key: str = Depends(verify_api_key)
 ):

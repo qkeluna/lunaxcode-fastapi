@@ -1,7 +1,8 @@
 """Pricing plan schemas"""
+from typing import Optional
 
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 
 
@@ -25,12 +26,12 @@ class PricingPlanCreate(PricingPlanBase):
 class PricingPlanUpdate(BaseModel):
     """Schema for updating pricing plan"""
 
-    name: str | None = Field(None, min_length=1, max_length=100)
-    price: int | None = Field(None, ge=0)
-    currency: str | None = Field(None, max_length=10)
-    timeline: str | None = Field(None, min_length=1, max_length=100)
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    price: Optional[int] = Field(None, ge=0)
+    currency: Optional[str] = Field(None, max_length=10)
+    timeline: Optional[str] = Field(None, min_length=1, max_length=100)
     features: List[str] | None = Field(None, min_items=1)
-    popular: bool | None = None
+    popular: Optional[bool] = None
 
 
 class PricingPlanResponse(PricingPlanBase):

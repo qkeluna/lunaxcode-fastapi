@@ -21,15 +21,27 @@ database_url = re.sub(r'[?&]channel_binding=[^&]*', '', database_url)
 database_url = re.sub(r'^postgresql:', 'postgresql+asyncpg:', database_url)
 
 # Create async SQLAlchemy engine
-engine = create_async_engine(
-    database_url,
-    echo=False if settings.is_production else True,  # Log SQL in development
-    future=True,
-    pool_pre_ping=True,  # Verify connections before using
-    pool_recycle=300,    # Recycle connections after 5 minutes
-    pool_size=5,         # Connection pool size
-    max_overflow=10,     # Max overflow connections
-)
+# For Vercel serverless: use smaller pool or NullPool
+if settings.is_production:
+    # Serverless: minimal pooling
+    from sqlalchemy.pool import NullPool
+    engine = create_async_engine(
+        database_url,
+        echo=False,
+        future=True,
+        poolclass=NullPool,  # No pooling for serverless
+    )
+else:
+    # Development: normal pooling
+    engine = create_async_engine(
+        database_url,
+        echo=True,
+        future=True,
+        pool_pre_ping=True,
+        pool_recycle=300,
+        pool_size=5,
+        max_overflow=10,
+    )
 
 # Create async session factory
 AsyncSessionLocal = async_sessionmaker(
