@@ -77,6 +77,14 @@ def root():
     }
 
 
+@app.get("/favicon.ico")
+@app.get("/favicon.png")
+async def favicon():
+    """Return 204 No Content for favicon requests to prevent errors"""
+    from fastapi import Response
+    return Response(status_code=204)
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

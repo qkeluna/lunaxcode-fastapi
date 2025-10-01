@@ -1,8 +1,8 @@
-"""Vercel serverless handler"""
+"""Vercel serverless handler - ASGI adapter for FastAPI"""
 
 from mangum import Mangum
 from api.main import app
 
-# Export Mangum handler directly - Vercel expects ASGI callable
-# Using lifespan="off" to prevent issues with serverless cold starts
-handler = Mangum(app, lifespan="off", api_gateway_base_path="/api")
+# Vercel requires a handler that is an ASGI callable
+# Mangum wraps FastAPI (ASGI) to work with Vercel's serverless runtime
+handler = Mangum(app, lifespan="off")

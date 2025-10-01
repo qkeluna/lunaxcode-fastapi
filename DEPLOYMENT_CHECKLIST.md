@@ -22,22 +22,40 @@ python scripts/seed_data.py
 
 ## 🔧 Fixed Issues (Oct 1, 2025)
 
-### 1. Handler Export Pattern
-**Problem:** `issubclass() arg 1 must be a class` TypeError
-- Root cause: Incorrect Mangum wrapper pattern in `api/index.py`
-- **Fix:** Export Mangum instance directly instead of wrapping in function
+### 1. Handler Export Pattern - Vercel Runtime Compatibility
+**Problem:** `issubclass() arg 1 must be a class` TypeError in Vercel's `vc__handler__python.py`
+- Root cause: Vercel's Python runtime couldn't recognize the handler as a proper ASGI callable
+- The error occurred during auto-detection when Vercel tried to determine handler type
+- Triggered by requests to `/`, `/favicon.ico`, `/favicon.png`
 
-**Before:**
+**Fixes Applied:**
+
+**Fix 1: Simplified Mangum Handler (`api/index.py`)**
 ```python
+# ❌ BEFORE (with wrapper - caused detection issues)
 _handler = Mangum(app, lifespan="off")
 def handler(event, context):
     return _handler(event, context)
-```
 
-**After:**
-```python
-handler = Mangum(app, lifespan="off", api_gateway_base_path="/api")
+# ✅ AFTER (direct export - proper ASGI callable)
+handler = Mangum(app, lifespan="off")
 ```
+**Key:** Removed `api_gateway_base_path` parameter and wrapper function for clean ASGI export
+
+**Fix 2: Added Favicon Handlers (`api/main.py`)**
+```python
+@app.get("/favicon.ico")
+@app.get("/favicon.png")
+async def favicon():
+    """Return 204 No Content for favicon requests"""
+    from fastapi import Response
+    return Response(status_code=204)
+```
+**Key:** Prevents 404 errors on favicon requests that were triggering handler detection issues
+
+**Fix 3: Cleaned Vercel Configuration (`vercel.json`)**
+- Removed `env.ENVIRONMENT` from vercel.json (set via dashboard instead)
+- Kept `maxLambdaSize: 15mb` for dependencies
 
 ### 2. Database URL Handling
 - Improved URL conversion for `postgres://` and `postgresql://` formats
