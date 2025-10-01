@@ -13,7 +13,8 @@ greenlet==3.2.4  # Required for SQLAlchemy async
 psycopg2-binary==2.9.10  # Sync driver for Alembic migrations
 
 # Vercel Deployment
-mangum==0.17.0
+# Note: Vercel's Python runtime natively supports ASGI (FastAPI)
+# No adapter like Mangum is needed
 
 # Authentication & Security
 python-jose[cryptography]==3.3.0

@@ -1,8 +1,8 @@
-"""Vercel serverless handler - ASGI adapter for FastAPI"""
+"""Vercel serverless handler - exports FastAPI app for ASGI runtime"""
 
-from mangum import Mangum
+# Vercel's Python runtime auto-detects ASGI apps
+# Simply import and export the FastAPI app - no wrapper needed
 from api.main import app
 
-# Vercel requires a handler that is an ASGI callable
-# Mangum wraps FastAPI (ASGI) to work with Vercel's serverless runtime
-handler = Mangum(app, lifespan="off")
+# This is the entry point Vercel will use
+__all__ = ["app"]

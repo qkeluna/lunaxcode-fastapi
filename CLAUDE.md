@@ -75,7 +75,7 @@ api/
 ├── main.py              # FastAPI app initialization
 ├── config.py            # Settings via Pydantic BaseSettings
 ├── database.py          # SQLAlchemy session management
-├── index.py             # Vercel serverless handler (Mangum wrapper)
+├── index.py             # Vercel serverless entry point (exports FastAPI app)
 ├── models/              # SQLAlchemy ORM models
 ├── schemas/             # Pydantic validation schemas
 ├── routers/             # API route handlers
@@ -237,15 +237,20 @@ Required in `.env`:
 - `LOG_LEVEL` - DEBUG/INFO/WARNING/ERROR
 
 ### Vercel Deployment
-The `api/index.py` wraps FastAPI with Mangum for serverless:
+**IMPORTANT:** Vercel's `@vercel/python` runtime **natively supports ASGI applications**. Do NOT use Mangum or other adapters.
+
+The `api/index.py` simply exports the FastAPI app:
 ```python
 from api.main import app
-from mangum import Mangum
-
-handler = Mangum(app)
+__all__ = ["app"]
 ```
 
-`vercel.json` routes all `/api/*` requests to this handler.
+**Why no Mangum?**
+- Mangum is designed for AWS Lambda, not Vercel
+- Using Mangum causes `issubclass() TypeError` in Vercel's runtime wrapper
+- Vercel auto-detects and serves ASGI apps directly
+
+`vercel.json` routes all requests to `api/index.py`, which Vercel serves as an ASGI application.
 
 ### Migration Guidelines
 - Always review auto-generated migrations before applying

@@ -24,23 +24,28 @@ python scripts/seed_data.py
 
 ### 1. Handler Export Pattern - Vercel Runtime Compatibility
 **Problem:** `issubclass() arg 1 must be a class` TypeError in Vercel's `vc__handler__python.py`
-- Root cause: Vercel's Python runtime couldn't recognize the handler as a proper ASGI callable
-- The error occurred during auto-detection when Vercel tried to determine handler type
-- Triggered by requests to `/`, `/favicon.ico`, `/favicon.png`
+- Root cause: Mangum adapter was incompatible with Vercel's Python runtime auto-detection
+- The error occurred when Vercel tried to wrap the handler in its runtime layer
+- Triggered by all requests including `/`, `/favicon.ico`, `/favicon.png`
 
-**Fixes Applied:**
+**THE REAL SOLUTION:**
 
-**Fix 1: Simplified Mangum Handler (`api/index.py`)**
+**Fix 1: Remove Mangum - Use Native ASGI (`api/index.py`)**
 ```python
-# ❌ BEFORE (with wrapper - caused detection issues)
-_handler = Mangum(app, lifespan="off")
-def handler(event, context):
-    return _handler(event, context)
-
-# ✅ AFTER (direct export - proper ASGI callable)
+# ❌ BEFORE (Mangum caused issubclass errors with Vercel)
+from mangum import Mangum
+from api.main import app
 handler = Mangum(app, lifespan="off")
+
+# ✅ AFTER (Direct FastAPI export - Vercel handles ASGI natively)
+from api.main import app
+__all__ = ["app"]
 ```
-**Key:** Removed `api_gateway_base_path` parameter and wrapper function for clean ASGI export
+**Key Insight:** Vercel's `@vercel/python` runtime **natively supports ASGI applications** like FastAPI. Using Mangum (designed for AWS Lambda) causes conflicts with Vercel's handler detection.
+
+**Fix 1b: Removed Mangum Dependency (`requirements.txt`)**
+- Mangum is not needed for Vercel deployment
+- Vercel's Python runtime auto-detects and serves ASGI apps directly
 
 **Fix 2: Added Favicon Handlers (`api/main.py`)**
 ```python
