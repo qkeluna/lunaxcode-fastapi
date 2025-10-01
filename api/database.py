@@ -21,14 +21,22 @@ if not database_url:
     )
 
 # Clean up URL for asyncpg compatibility
-# Remove channel_binding parameter (not supported by asyncpg)
+# Remove problematic parameters that asyncpg doesn't support
 database_url = re.sub(r'[?&]channel_binding=[^&]*', '', database_url)
+database_url = re.sub(r'[?&]sslmode=[^&]*', '', database_url)
 
 # Convert to async format (postgresql -> postgresql+asyncpg)
 if database_url.startswith('postgresql://'):
     database_url = database_url.replace('postgresql://', 'postgresql+asyncpg://', 1)
 elif database_url.startswith('postgres://'):
     database_url = database_url.replace('postgres://', 'postgresql+asyncpg://', 1)
+
+# Add SSL requirement for asyncpg (Neon requires SSL)
+# asyncpg uses ssl=require instead of sslmode=require
+if '?' in database_url:
+    database_url += '&ssl=require'
+else:
+    database_url += '?ssl=require'
 
 # Create async SQLAlchemy engine
 # For Vercel serverless: use smaller pool or NullPool

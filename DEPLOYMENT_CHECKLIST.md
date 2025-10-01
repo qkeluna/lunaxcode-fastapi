@@ -4,8 +4,9 @@
 
 ### Environment Variables (Set in Vercel Dashboard)
 - [ ] `DATABASE_URL` - Neon Postgres connection string
-  - Format: `postgresql://user:pass@host.neon.tech/dbname?sslmode=require`
-  - Note: Remove `channel_binding` parameter if present
+  - Format: `postgresql://user:pass@host.neon.tech/dbname`
+  - **IMPORTANT:** Do NOT include `?sslmode=require` - the code auto-converts it to `ssl=require` for asyncpg
+  - Note: `channel_binding` and `sslmode` parameters are automatically removed/converted
 - [ ] `API_KEY` - Admin authentication key
 - [ ] `CORS_ORIGINS` - Comma-separated allowed origins (e.g., `https://lunaxcode.com,https://www.lunaxcode.com`)
 - [ ] `ENVIRONMENT` - Set to `production`
@@ -62,10 +63,27 @@ async def favicon():
 - Removed `env.ENVIRONMENT` from vercel.json (set via dashboard instead)
 - Kept `maxLambdaSize: 15mb` for dependencies
 
-### 2. Database URL Handling
-- Improved URL conversion for `postgres://` and `postgresql://` formats
-- Removed problematic `channel_binding` parameter for asyncpg compatibility
-- Using `NullPool` for serverless (no connection pooling)
+### 2. Database URL Handling - asyncpg SSL Configuration
+**Problem:** `connect() got an unexpected keyword argument 'sslmode'`
+- Root cause: asyncpg doesn't support `sslmode` parameter (PostgreSQL native format)
+- asyncpg requires `ssl=require` instead of `sslmode=require`
+
+**Fix:** Auto-convert SSL parameters in `api/database.py`
+```python
+# Remove sslmode parameter
+database_url = re.sub(r'[?&]sslmode=[^&]*', '', database_url)
+
+# Add asyncpg-compatible SSL
+if '?' in database_url:
+    database_url += '&ssl=require'
+else:
+    database_url += '?ssl=require'
+```
+
+**Additional improvements:**
+- Auto-convert `postgres://` and `postgresql://` to `postgresql+asyncpg://`
+- Remove `channel_binding` parameter (not supported by asyncpg)
+- Use `NullPool` for serverless (no connection pooling)
 
 ### 3. Vercel Configuration
 - Added `maxLambdaSize: 15mb` to handle dependencies

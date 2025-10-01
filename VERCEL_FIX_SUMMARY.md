@@ -61,12 +61,38 @@ async def favicon():
     return Response(status_code=204)
 ```
 
+## 🚨 CRITICAL UPDATE: Database SSL Configuration
+
+### Additional Issue Discovered (Oct 1, 2025)
+After removing Mangum, database endpoints returned `500` errors:
+```
+Error: connect() got an unexpected keyword argument 'sslmode'
+```
+
+**Root Cause:** asyncpg doesn't support `sslmode` parameter (PostgreSQL format). It requires `ssl=require` instead.
+
+**Fix Applied in `api/database.py`:**
+```python
+# Remove sslmode (not supported by asyncpg)
+database_url = re.sub(r'[?&]sslmode=[^&]*', '', database_url)
+
+# Add asyncpg-compatible SSL
+if '?' in database_url:
+    database_url += '&ssl=require'
+else:
+    database_url += '?ssl=require'
+```
+
+**Important:** Set `DATABASE_URL` in Vercel **without** `?sslmode=require`. The code auto-converts it.
+
+---
+
 ## 🚀 Deployment Instructions
 
 ### Step 1: Commit Changes
 ```bash
-git add api/index.py requirements.txt CLAUDE.md DEPLOYMENT_CHECKLIST.md VERCEL_FIX_SUMMARY.md
-git commit -m "fix: remove Mangum - use Vercel native ASGI support for FastAPI"
+git add api/index.py api/main.py api/database.py requirements.txt CLAUDE.md DEPLOYMENT_CHECKLIST.md VERCEL_FIX_SUMMARY.md
+git commit -m "fix: remove Mangum + fix asyncpg SSL configuration for Vercel"
 git push origin main
 ```
 
