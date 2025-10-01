@@ -20,12 +20,15 @@ if not database_url:
         "Please set it in Vercel dashboard or .env file."
     )
 
-# Remove problematic query parameters that asyncpg doesn't support
-database_url = re.sub(r'[?&]sslmode=[^&]*', '', database_url)
+# Clean up URL for asyncpg compatibility
+# Remove channel_binding parameter (not supported by asyncpg)
 database_url = re.sub(r'[?&]channel_binding=[^&]*', '', database_url)
 
-# Convert to async format
-database_url = re.sub(r'^postgresql:', 'postgresql+asyncpg:', database_url)
+# Convert to async format (postgresql -> postgresql+asyncpg)
+if database_url.startswith('postgresql://'):
+    database_url = database_url.replace('postgresql://', 'postgresql+asyncpg://', 1)
+elif database_url.startswith('postgres://'):
+    database_url = database_url.replace('postgres://', 'postgresql+asyncpg://', 1)
 
 # Create async SQLAlchemy engine
 # For Vercel serverless: use smaller pool or NullPool

@@ -3,10 +3,6 @@
 from mangum import Mangum
 from api.main import app
 
-# Create the Mangum handler instance
-_handler = Mangum(app, lifespan="off")
-
-# Vercel expects a callable named 'handler'
-def handler(event, context):
-    """Wrapper function for Vercel serverless"""
-    return _handler(event, context)
+# Export Mangum handler directly - Vercel expects ASGI callable
+# Using lifespan="off" to prevent issues with serverless cold starts
+handler = Mangum(app, lifespan="off", api_gateway_base_path="/api")
