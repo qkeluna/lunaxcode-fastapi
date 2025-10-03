@@ -14,9 +14,12 @@ from api.routers import (
     onboarding,
     leads,
     health,
+    onboarding_submission,
+    contact_submission,
+    submissions,
 )
 
-# Create FastAPI application
+# Create FastAPI application with API Key security scheme for Swagger
 app = FastAPI(
     title="Lunaxcode API",
     description="REST API for Lunaxcode website with dual data storage",
@@ -24,7 +27,36 @@ app = FastAPI(
     docs_url="/api/v1/docs",
     redoc_url="/api/v1/redoc",
     openapi_url="/api/v1/openapi.json",
+    swagger_ui_init_oauth={
+        "clientId": "swagger-ui",
+        "appName": "Lunaxcode API",
+    },
 )
+
+# Add API Key security scheme to OpenAPI schema
+from fastapi.openapi.utils import get_openapi
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+    openapi_schema["components"]["securitySchemes"] = {
+        "APIKeyHeader": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "X-API-Key",
+            "description": "Enter your API key (from .env file)"
+        }
+    }
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
 
 # Configure CORS
 app.add_middleware(
@@ -65,6 +97,9 @@ app.include_router(features.router, prefix=API_V1_PREFIX)
 app.include_router(company.router, prefix=API_V1_PREFIX)
 app.include_router(onboarding.router, prefix=API_V1_PREFIX)
 app.include_router(leads.router, prefix=API_V1_PREFIX)
+app.include_router(onboarding_submission.router, prefix=API_V1_PREFIX)
+app.include_router(contact_submission.router, prefix=API_V1_PREFIX)
+app.include_router(submissions.router, prefix=API_V1_PREFIX)
 
 
 @app.get("/")

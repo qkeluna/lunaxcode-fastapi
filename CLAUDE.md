@@ -7,12 +7,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 FastAPI-based REST API for Lunaxcode website, replacing static TypeScript data with a Postgres-backed API deployed to Vercel as serverless functions.
 
 **Tech Stack:**
-- FastAPI (Python 3.13+) with full async support
+- FastAPI (Python 3.11+) with full async support
 - SQLAlchemy 2.0 async ORM with asyncpg driver
 - Neon Postgres (serverless)
 - Pydantic v2 for validation
 - Alembic migrations (sync for compatibility)
-- Vercel serverless deployment via Mangum
+- Vercel serverless deployment (native ASGI support)
 
 ## Commands
 
@@ -121,6 +121,8 @@ When creating or modifying lead submission logic, always ensure both formats are
 - `company_info` - Singleton table for company details
 - `onboarding_questions` - Dynamic form schemas per service
 - `leads` - Customer submissions with dual storage (JSONB + AI prompt)
+- `onboarding_submissions` - Full onboarding submissions with payment tracking (UUID primary key)
+- `contact_submissions` - Simple contact form submissions (UUID primary key)
 
 **Important Constraints:**
 - `company_info.id = 1` (singleton constraint)
@@ -132,8 +134,18 @@ When creating or modifying lead submission logic, always ensure both formats are
 **Base URL:** `/api/v1`
 
 **Authentication:**
-- Public: All GET endpoints, POST /leads
-- Admin: All POST/PUT/DELETE (except POST /leads) - requires `X-API-Key` header
+- Public: All GET endpoints (except GET /leads), POST /leads
+- Admin: All POST/PUT/DELETE endpoints (requires `X-API-Key` header), GET /leads
+
+**Admin CRUD Status:**
+All resources have full CRUD operations implemented:
+- ✅ Pricing Plans: GET, POST, PUT, DELETE
+- ✅ Services: GET, POST, PUT, DELETE
+- ✅ Features: GET, POST, PUT, DELETE
+- ✅ Add-ons: GET, POST, PUT, DELETE
+- ✅ Company Info: GET, PUT
+- ✅ Onboarding Questions: GET, POST, PUT, DELETE
+- ✅ Leads: GET (admin), POST (public), PUT (admin), DELETE (admin)
 
 **Response Structure:**
 ```python
@@ -146,10 +158,27 @@ When creating or modifying lead submission logic, always ensure both formats are
 ```
 
 **Key Endpoints:**
+
+*Existing Endpoints:*
 - `GET /pricing` - Public, returns all pricing plans
+- `POST /pricing` - Admin, create new pricing plan
+- `PUT /pricing/{plan_id}` - Admin, update pricing plan
+- `DELETE /pricing/{plan_id}` - Admin, delete pricing plan
 - `POST /leads` - Public, auto-generates ai_prompt field
-- `GET /leads` - Admin only, returns all lead data
+- `GET /leads?status=new&skip=0&limit=100` - Admin, returns filtered leads
+- `PUT /leads/{id}` - Admin, update lead status
 - `GET /onboarding/questions/{service_type}` - Public, dynamic form schemas
+
+*New Onboarding & Contact Endpoints:*
+- `POST /onboarding/submit` - Public, submit onboarding form, returns submission ID
+- `GET /onboarding/submissions` - Admin, list all onboarding submissions
+- `GET /onboarding/submissions/{id}` - Admin, get submission details
+- `PATCH /onboarding/submissions/{id}/status` - Admin, update submission status
+- `POST /contact/submit` - Public, submit contact form
+- `GET /contact/submissions` - Admin, list all contact submissions
+- `GET /submissions/{id}/status` - Public, check submission status (no auth required)
+
+See [ADMIN_API_REFERENCE.md](./ADMIN_API_REFERENCE.md) for complete endpoint documentation
 
 ## Development Patterns
 
